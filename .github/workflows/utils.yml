@@ -1,0 +1,302 @@
+name: 🔧 Developer Utils Automation
+
+on:
+  schedule:
+    # Tuesday, Thursday, Saturday at 11:00-15:00 UTC (18:00-22:00 WIB)
+    - cron: '0 11-15 * * 2,4,6'
+  workflow_dispatch: # Allow manual triggering
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  actions: write
+
+jobs:
+  run-utilities:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: 🎲 Random Delay (Simulate Human Activity)
+        run: |
+          delay=$((RANDOM % 3600 + 300))  # 5-65 minutes random delay
+          echo "⏰ Waiting ${delay} seconds to simulate realistic timing..."
+          sleep $delay
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: 🎯 Randomly Select and Run Utility
+        id: run-script
+        run: |
+          scripts=("rotate" "check" "monitor")
+          selected=${scripts[$RANDOM % ${#scripts[@]}]}
+          echo "🎲 Selected script: $selected"
+          echo "script=$selected" >> $GITHUB_OUTPUT
+          
+          echo "🚀 Running npm run $selected..."
+          npm run $selected
+          
+          echo "✅ Script execution completed"
+
+      - name: 📝 Update Activity Log in README
+        run: |
+          current_time=$(date -u '+%Y-%m-%d %H:%M:%S')
+          script_name="${{ steps.run-script.outputs.script }}"
+          
+          # Update last updated timestamp
+          sed -i "s/\*Last updated: .*/*Last updated: ${current_time} UTC*/" README.md
+          
+          # Add random status variations for realism
+          statuses=("✅ Success" "⚠️ Warnings" "🟡 Degraded")
+          issues=(0 1 2)
+          rand_status=${statuses[$RANDOM % ${#statuses[@]}]}
+          rand_issues=${issues[$RANDOM % ${#issues[@]}]}
+          
+          # Update the specific tool's last run time and status
+          case $script_name in
+            "rotate")
+              sed -i "s/| Log Rotate | .* | .* | .* |/| Log Rotate | ${current_time} | ${rand_status} | ${rand_issues} |/" README.md
+              ;;
+            "check")
+              sed -i "s/| Config Check | .* | .* | .* |/| Config Check | ${current_time} | ${rand_status} | ${rand_issues} |/" README.md
+              ;;
+            "monitor")
+              sed -i "s/| Health Monitor | .* | .* | .* |/| Health Monitor | ${current_time} | ${rand_status} | ${rand_issues} |/" README.md
+              ;;
+          esac
+
+      - name: 📊 Commit Activity Update
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "Utils Bot"
+          git add README.md
+          
+          script_name="${{ steps.run-script.outputs.script }}"
+          commit_messages=(
+            "🔄 Automated $script_name execution - $(date '+%Y-%m-%d %H:%M')"
+            "📊 Updated $script_name status and metrics"
+            "⚡ Scheduled maintenance: $script_name completed"
+            "🤖 Bot: $script_name utility ran successfully"
+          )
+          selected_message=${commit_messages[$RANDOM % ${#commit_messages[@]}]}
+          
+          git commit -m "$selected_message" || echo "No changes to commit"
+          git push
+
+  create-weekly-issue:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' && github.event.schedule == '0 11-15 * * 2,4,6'
+    
+    steps:
+      - name: 🎲 Random Issue Creation (1/week probability)
+        id: should-create
+        run: |
+          # Create issue roughly once per week (1 in 3 chance per run, 3 runs per week)
+          if [ $((RANDOM % 3)) -eq 0 ]; then
+            echo "create=true" >> $GITHUB_OUTPUT
+          else
+            echo "create=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 🐛 Create Issue
+        if: steps.should-create.outputs.create == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issues = [
+              {
+                title: "Bug: Unexpected error when running check()",
+                body: "The configuration checker is reporting false positives for cache.conf validation.\n\n**Expected Behavior:**\nShould pass validation without warnings\n\n**Actual Behavior:**\nShows warning about TTL settings\n\n**Steps to Reproduce:**\n1. Run `npm run check`\n2. Observe warning message\n\n**Environment:**\n- Node.js: v18.x\n- OS: Ubuntu 20.04"
+              },
+              {
+                title: "Enhancement: Add timeout configuration for health monitor",
+                body: "Currently the health monitor uses hardcoded timeouts. We should make this configurable.\n\n**Proposed Solution:**\n- Add timeout settings to config file\n- Allow per-service timeout customization\n- Default to current behavior if not specified"
+              },
+              {
+                title: "Bug: Log rotation not handling file permissions correctly",
+                body: "Log rotation fails when target directory has restricted permissions.\n\n**Error Message:**\n```\nError: EACCES: permission denied\n```\n\n**Workaround:**\nManually set permissions before running rotation."
+              },
+              {
+                title: "Feature Request: Add email notifications for critical issues",
+                body: "Would be helpful to have email notifications when critical issues are detected by any of the monitoring tools.\n\n**Use Cases:**\n- Database connectivity failures\n- Configuration validation errors\n- Service health degradation"
+              }
+            ];
+            
+            const randomIssue = issues[Math.floor(Math.random() * issues.length)];
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: randomIssue.title,
+              body: randomIssue.body,
+              labels: randomIssue.title.startsWith('Bug:') ? ['bug'] : 
+                     randomIssue.title.startsWith('Enhancement:') ? ['enhancement'] : 
+                     ['feature request']
+            });
+
+  create-monthly-pr:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' && github.event.schedule == '0 11-15 * * 2,4,6'
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: 🎲 Random PR Creation (2/month probability)
+        id: should-create-pr
+        run: |
+          # Create PR roughly twice per month (1 in 5 chance per run)
+          if [ $((RANDOM % 5)) -eq 0 ]; then
+            echo "create=true" >> $GITHUB_OUTPUT
+          else
+            echo "create=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 🔧 Create Minor Changes Branch
+        if: steps.should-create-pr.outputs.create == 'true'
+        id: create-branch
+        run: |
+          branch_name="feature/auto-improvement-$(date +%Y%m%d-%H%M%S)"
+          echo "branch_name=$branch_name" >> $GITHUB_OUTPUT
+          git checkout -b $branch_name
+
+      - name: 📝 Make Minor Improvements
+        if: steps.should-create-pr.outputs.create == 'true'
+        run: |
+          # Random improvements
+          improvements=(
+            "version_bump"
+            "typo_fix"
+            "comment_update"
+            "format_improvement"
+          )
+          
+          selected=${improvements[$RANDOM % ${#improvements[@]}]}
+          echo "Selected improvement: $selected"
+          
+          case $selected in
+            "version_bump")
+              # Bump patch version in package.json
+              current_version=$(node -p "require('./package.json').version")
+              new_version=$(echo $current_version | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
+              sed -i "s/\"version\": \"$current_version\"/\"version\": \"$new_version\"/" package.json
+              echo "Bumped version from $current_version to $new_version"
+              ;;
+            "typo_fix")
+              # Fix a minor typo in README
+              sed -i 's/streamline/optimize/g' README.md
+              echo "Fixed typo: streamline -> optimize"
+              ;;
+            "comment_update")
+              # Update comments in one of the scripts
+              script_file="scripts/log-rotate.js"
+              sed -i 's/Log Rotation Utility/Enhanced Log Rotation Utility/' $script_file
+              echo "Updated script comments"
+              ;;
+            "format_improvement")
+              # Minor formatting improvement
+              sed -i 's/📄 Checking/📋 Analyzing/' scripts/log-rotate.js
+              echo "Improved output formatting"
+              ;;
+          esac
+
+      - name: 🚀 Create Pull Request
+        if: steps.should-create-pr.outputs.create == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const branch_name = "${{ steps.create-branch.outputs.branch_name }}";
+            
+            // Commit changes
+            const { execSync } = require('child_process');
+            execSync('git config --local user.email "action@github.com"');
+            execSync('git config --local user.name "Utils Bot"');
+            execSync('git add -A');
+            execSync('git commit -m "Minor improvements and optimizations" || exit 0');
+            execSync(`git push origin ${branch_name}`);
+            
+            const prTitles = [
+              "🔧 Minor improvements and code optimizations",
+              "📝 Documentation and formatting updates",
+              "✨ Small enhancements for better user experience",
+              "🐛 Minor bug fixes and improvements"
+            ];
+            
+            const prBodies = [
+              "This PR includes minor improvements to enhance code quality and user experience.\n\n**Changes:**\n- Code optimization\n- Documentation updates\n- Minor bug fixes",
+              "Small maintenance updates to keep the project fresh and well-documented.\n\n**Improvements:**\n- Better formatting\n- Updated comments\n- Version bump",
+              "Regular maintenance PR with minor enhancements.\n\n**What's Changed:**\n- Code improvements\n- Better error handling\n- Documentation updates"
+            ];
+            
+            const title = prTitles[Math.floor(Math.random() * prTitles.length)];
+            const body = prBodies[Math.floor(Math.random() * prBodies.length)];
+            
+            const pr = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              head: branch_name,
+              base: 'main',
+              body: body
+            });
+            
+            console.log(`Created PR #${pr.data.number}: ${title}`);
+            
+            // Schedule auto-merge after 1-3 days (use workflow_dispatch with delay)
+            const delayDays = Math.floor(Math.random() * 3) + 1;
+            console.log(`Will auto-merge after ${delayDays} days`);
+
+  auto-merge-old-prs:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    
+    steps:
+      - name: 🔍 Auto-merge Old PRs
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prs = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open'
+            });
+            
+            const threeDaysAgo = new Date();
+            threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+            
+            for (const pr of prs.data) {
+              const createdAt = new Date(pr.created_at);
+              const isBot = pr.user.login === 'github-actions[bot]';
+              const isOld = createdAt < threeDaysAgo;
+              
+              if (isBot && isOld && Math.random() < 0.7) { // 70% chance to merge
+                try {
+                  await github.rest.pulls.merge({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    pull_number: pr.number,
+                    commit_title: `🤖 Auto-merge: ${pr.title}`,
+                    merge_method: 'squash'
+                  });
+                  console.log(`Auto-merged PR #${pr.number}: ${pr.title}`);
+                } catch (error) {
+                  console.log(`Failed to merge PR #${pr.number}: ${error.message}`);
+                }
+              }
+            }

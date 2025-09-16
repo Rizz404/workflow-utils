@@ -1,0 +1,32 @@
+{
+  "name": "dev-utils-toolkit",
+  "version": "1.0.0",
+  "description": "Collection of developer utilities and automation scripts",
+  "private": false,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "rotate": "node scripts/log-rotate.js",
+    "check": "node scripts/config-check.js",
+    "monitor": "node scripts/health-monitor.js",
+    "all": "npm run rotate && npm run check && npm run monitor"
+  },
+  "keywords": [
+    "developer-tools",
+    "automation",
+    "utilities",
+    "devops",
+    "monitoring"
+  ],
+  "author": "Developer Utils Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/dev-utils-toolkit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/username/dev-utils-toolkit/issues"
+  }
+}
