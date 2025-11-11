@@ -59,9 +59,9 @@ npm run all
 |------|----------|--------|--------|
 | Log Rotate | 2025-11-08 14:19:28 | ✅ Success | 1 |
 | Config Check | 2025-11-08 11:38:15 | 🟡 Degraded | 1 |
-| Health Monitor | 2025-11-11 13:00:57 | ✅ Success | 0 |
+| Health Monitor | 2025-11-11 13:35:02 | ⚠️ Warnings | 1 |
 
-*Last updated: 2025-11-11 13:00:57 UTC*
+*Last updated: 2025-11-11 13:35:02 UTC*
 
 ## 🔧 Installation
 
