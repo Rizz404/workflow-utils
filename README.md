@@ -58,10 +58,10 @@ npm run all
 | Tool | Last Run | Status | Issues |
 |------|----------|--------|--------|
 | Log Rotate | 2025-12-02 16:02:59 | 🟡 Degraded | 2 |
-| Config Check | 2025-11-29 13:02:53 | ⚠️ Warnings | 2 |
+| Config Check | 2025-12-04 13:15:50 | 🟡 Degraded | 2 |
 | Health Monitor | 2025-12-04 11:38:22 | 🟡 Degraded | 1 |
 
-*Last updated: 2025-12-04 11:38:22 UTC*
+*Last updated: 2025-12-04 13:15:50 UTC*
 
 ## 🔧 Installation
 
