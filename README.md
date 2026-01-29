@@ -57,11 +57,11 @@ npm run all
 
 | Tool | Last Run | Status | Issues |
 |------|----------|--------|--------|
-| Log Rotate | 2026-01-24 16:18:04 | ⚠️ Warnings | 2 |
+| Log Rotate | 2026-01-29 14:17:59 | 🟡 Degraded | 2 |
 | Config Check | 2026-01-29 13:29:24 | 🟡 Degraded | 1 |
 | Health Monitor | 2026-01-27 14:43:14 | ⚠️ Warnings | 0 |
 
-*Last updated: 2026-01-29 13:29:24 UTC*
+*Last updated: 2026-01-29 14:17:59 UTC*
 
 ## 🔧 Installation
 
