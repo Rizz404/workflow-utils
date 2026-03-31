@@ -3,7 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 
-console.log('🔄 Log Rotation Utility v1.2.3');
+console.log('🔄 Enhanced Log Rotation Utility v1.2.3');
 console.log('================================');
 
 // Simulate log rotation process
