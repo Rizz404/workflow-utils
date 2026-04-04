@@ -12,7 +12,7 @@ const maxSizeMB = 10;
 
 logFiles.forEach(logFile => {
   const sizeMB = Math.floor(Math.random() * 15) + 1;
-  console.log(`📄 Checking ${logFile}: ${sizeMB}MB`);
+  console.log(`📋 Analyzing ${logFile}: ${sizeMB}MB`);
   
   if (sizeMB > maxSizeMB) {
     console.log(`   ✨ Rotating ${logFile} (size exceeded ${maxSizeMB}MB)`);
