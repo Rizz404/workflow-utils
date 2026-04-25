@@ -1,6 +1,6 @@
 # 🛠️ Developer Utils Toolkit
 
-A collection of lightweight utilities and automation scripts to streamline your development workflow.
+A collection of lightweight utilities and automation scripts to optimize your development workflow.
 
 ## 📋 Available Tools
 
